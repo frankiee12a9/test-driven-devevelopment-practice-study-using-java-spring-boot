@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -39,7 +40,8 @@ import com.mvc.tdd.entity.CollegeStudent;
 import com.mvc.tdd.entity.GradebookCollegeStudent;
 import com.mvc.tdd.service.StudentGradeService;
 
-@TestPropertySource("/application.properties")
+// @TestPropertySource("/application.properties")
+@TestPropertySource("/application-test.properties")
 @AutoConfigureMockMvc
 @SpringBootTest
 public class StudentGradeControllerTest {
@@ -58,6 +60,24 @@ public class StudentGradeControllerTest {
     @Autowired
     private StudentDao studentDao;
 
+    @Value("${sql.script.create.student}") 
+    private String sqlInsertStudentData;
+
+    @Value("${sql.script.create.math.grade}") 
+    private String sqlInsertMathGradeData;
+
+    @Value("${sql.script.create.science.grade}") 
+    private String sqlInsertScienceGradeData;
+
+    @Value("${sql.script.delete.student}") 
+    private String sqlDeleteStudentData;
+
+    @Value("${sql.script.delete.math.grade}") 
+    private String sqlDeleteMathGradeData;
+
+    @Value("${sql.script.delete.science.grade}") 
+    private String sqlDeleteScienceGradeData;
+
     @BeforeAll 
     public static void setup() {
         httpRequest = new MockHttpServletRequest();
@@ -69,8 +89,7 @@ public class StudentGradeControllerTest {
 
     @BeforeEach
     public void beforeEach() {
-        jdbc.execute("insert into student(id, first_name, last_name, email_address) " +
-         "values(0, 'kane', 'nguyen', 'cudayanh@test.com')");
+        jdbc.execute(sqlInsertStudentData);
     }
 
     @Test
@@ -95,9 +114,8 @@ public class StudentGradeControllerTest {
     @Test
     void createStudentHttpRequest() throws Exception {
         // test updating for UI (add/get students)
-        CollegeStudent studentA = new CollegeStudent("tom", "nguyen", "tom@test.com");
-        List<CollegeStudent> students = new ArrayList<>(Arrays.asList(studentA));
-
+        // CollegeStudent studentA = new CollegeStudent("tom", "nguyen", "tom@test.com");
+        // List<CollegeStudent> students = new ArrayList<>(Arrays.asList(studentA));
         // when(studentServiceMock.getGradebook()).thenReturn(students);
         // assertIterableEquals(students, studentServiceMock.getGradebook());
 
@@ -121,8 +139,8 @@ public class StudentGradeControllerTest {
 
     @Test
     void deleteStudentHttpRequest() throws Exception {
-        int studentId = 0;
-        assertTrue(studentDao.findById(studentId).isPresent(), "Find student by Id (should be passed)");
+        int studentId = 2;
+        assertTrue(studentDao.findById(studentId).isPresent(), "Find student by Id (should return true)");
 
         MvcResult mvcResult = mockMvc.perform(get("/student/delete/{id}", studentId))
                                     .andExpect(status().isOk())
@@ -132,23 +150,50 @@ public class StudentGradeControllerTest {
 
         ModelAndViewAssert.assertViewName(mav, "index");
 
-        assertFalse(studentDao.findById(1).isPresent());
+        assertFalse(studentDao.findById(studentId).isPresent());
     }
 
     @Test
     void deleteStudentHttpRequestWithErrorPage() throws Exception {
-        int nonExistedStudentId = 111;
-        MvcResult mvcResult = mockMvc.perform(get("/student/delete/{id}", nonExistedStudentId))
+        int nonExistingStudentId = 111;
+        MvcResult mvcResult = mockMvc.perform(get("/student/delete/{id}", nonExistingStudentId))
                                     .andExpect(status().isOk())
                                     .andReturn();
 
         ModelAndView mav = mvcResult.getModelAndView();
 
         ModelAndViewAssert.assertViewName(mav, "error");
-   }
+    }
 
+    @Test 
+    void getStudentDetailsHttpRequest() throws Exception {
+        int studentId = 2;
+        assertTrue(studentDao.findById(studentId).isPresent());
+
+        MvcResult mvcResult = mockMvc.perform(get("/studentDetails/{id}", studentId))
+                                    .andExpect(status().isOk())
+                                    .andReturn();
+
+        ModelAndView mav = mvcResult.getModelAndView();
+
+        ModelAndViewAssert.assertViewName(mav, "studentDetails");
+    }
+
+    @Test 
+    void getStudentDetailsHttpRequestWithErrorPage() throws Exception {
+        int studentId = 222;
+        assertFalse(studentDao.findById(studentId).isPresent());
+
+        MvcResult mvcResult = mockMvc.perform(get("/studentDetails/{id}", studentId))
+                                    .andExpect(status().isOk())
+                                    .andReturn();
+
+        ModelAndView mav = mvcResult.getModelAndView();
+
+        ModelAndViewAssert.assertViewName(mav, "error");
+    }
     @AfterEach
     public void afterEach() {
-        jdbc.execute("DELETE FROM student");
+        jdbc.execute(sqlDeleteStudentData);
     }
 }
