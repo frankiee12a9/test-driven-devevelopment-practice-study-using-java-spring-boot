@@ -26,17 +26,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.ModelAndViewAssert;
-import org.springframework.test.web.reactive.server.StatusAssertions;
 import org.springframework.test.web.servlet.MockMvc;
 // import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;  // not work
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*; // work
-// import static net.bytebuddy.matcher.ElementMatchers.is;
-// import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-// import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.mvc.tdd.dao.StudentDao;
@@ -104,7 +99,6 @@ public class StudentGradeControllerTest {
         List<CollegeStudent> students = new ArrayList<>(Arrays.asList(studentA));
 
         // when(studentServiceMock.getGradebook()).thenReturn(students);
-
         // assertIterableEquals(students, studentServiceMock.getGradebook());
 
         MvcResult mvcResult = mockMvc.perform(post("/")
