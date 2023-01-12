@@ -51,7 +51,7 @@ public class StudentGradeServiceTest {
 
 
     @BeforeEach
-    void setupBeforeTransactions() {
+    void setupDBBeforeTransactions() {
         jdbc.execute("insert into student(id, first_name, last_name, email_address) " +
          "values(2, 'kane', 'nguyen', 'cudayanh@test.com')");
 
@@ -62,7 +62,7 @@ public class StudentGradeServiceTest {
 
     // STUDENT
     @Test
-    void createStudentServicePassed() throws Exception {
+    void createStudentService() throws Exception {
         studentGradeService.createStudent("user", "nguyen1", "user@test.com");
 
         String email = "user@test.com";
@@ -83,10 +83,7 @@ public class StudentGradeServiceTest {
 
     @Test
     void deleteStudent()  throws Exception {
-        // int existingStudentId = 1;
-        // int existingStudentId = 0;
         int existingStudentId = 2;
-
         Optional<CollegeStudent> student = studentDao.findById(existingStudentId);
 
         assertTrue(student.isPresent(), "Delete existing student");
@@ -151,18 +148,18 @@ public class StudentGradeServiceTest {
         Iterable<ScienceGrade> scienceGrades = scienceGradeDao.findGradesByStudentId(studentId);
 
         // verify there are grades
-        assertTrue(mathGrades.iterator().hasNext(), "Student should has math grades");
-        assertTrue(scienceGrades.iterator().hasNext(), "Student should has science grades");
+        assertTrue(mathGrades.iterator().hasNext(), "student should has math grades");
+        assertTrue(scienceGrades.iterator().hasNext(), "student should has science grades");
 
         // verify number of each specific grades
-        assertTrue(((Collection<ScienceGrade>) scienceGrades).size() >= 1, "Student should has >= 1 science grades");
-        assertTrue(((Collection<MathGrade>) mathGrades).size() >= 1, "Student should has >= 1 science grades");
+        assertTrue(((Collection<ScienceGrade>) scienceGrades).size() >= 1, "student should has >= 1 science grades");
+        assertTrue(((Collection<MathGrade>) mathGrades).size() >= 1, "student should has >= 1 science grades");
     }
 
     @Test
     void deleteGradeService() throws Exception {
-        assertEquals(2, studentGradeService.deleteGrade(2, "math"), "Should return studentId after delete");
-        assertEquals(2, studentGradeService.deleteGrade(2, "science"), "Should return studentId after delete");
+        assertEquals(2, studentGradeService.deleteGrade(2, "math"), "should return studentId after delete");
+        assertEquals(2, studentGradeService.deleteGrade(2, "science"), "should return studentId after delete");
     }
 
     @Test
@@ -190,12 +187,12 @@ public class StudentGradeServiceTest {
 
     @Test
     void deleteGradeServiceWithNonExistingStudentId() throws Exception {
-        assertNotEquals(0, studentGradeService.deleteGrade(2, "math"), "Shouldn't return studentId after delete");
-        assertNotEquals(0, studentGradeService.deleteGrade(2, "science"), "Shouldn't return studentId after delete");
+        assertNotEquals(0, studentGradeService.deleteGrade(2, "math"), "shouldn't return studentId after delete");
+        assertNotEquals(0, studentGradeService.deleteGrade(2, "science"), "shouldn't return studentId after delete");
     }
 
     @Test
-    void createGradesServiceReturnFalse() throws Exception {
+    void createInvalidGradeService() throws Exception {
         int studentId = 0;
 
         // create the invalid grades
@@ -205,7 +202,7 @@ public class StudentGradeServiceTest {
     }
 
     @AfterEach
-    public void setupAfterTransactions()  throws Exception {
+    public void setupDBAfterTransactions()  throws Exception {
         jdbc.execute("DELETE FROM student");
         jdbc.execute("DELETE FROM math_grade");
         jdbc.execute("DELETE FROM science_grade");
