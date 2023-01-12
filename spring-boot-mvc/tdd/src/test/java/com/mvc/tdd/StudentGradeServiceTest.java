@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
@@ -30,7 +31,8 @@ import com.mvc.tdd.entity.MathGrade;
 import com.mvc.tdd.entity.ScienceGrade;
 import com.mvc.tdd.service.StudentGradeService;
 
-@TestPropertySource("/application.properties")
+// @TestPropertySource("/application.properties")
+@TestPropertySource("/application-test.properties")
 @SpringBootTest
 public class StudentGradeServiceTest {
  
@@ -49,15 +51,30 @@ public class StudentGradeServiceTest {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Value("${sql.script.create.student}") 
+    private String sqlInsertStudentData;
+
+    @Value("${sql.script.create.math.grade}") 
+    private String sqlInsertMathGradeData;
+
+    @Value("${sql.script.create.science.grade}") 
+    private String sqlInsertScienceGradeData;
+
+    @Value("${sql.script.delete.student}") 
+    private String sqlDeleteStudentData;
+
+    @Value("${sql.script.delete.math.grade}") 
+    private String sqlDeleteMathGradeData;
+
+    @Value("${sql.script.delete.science.grade}") 
+    private String sqlDeleteScienceGradeData;
+
 
     @BeforeEach
     void setupDBBeforeTransactions() {
-        jdbc.execute("insert into student(id, first_name, last_name, email_address) " +
-         "values(2, 'kane', 'nguyen', 'cudayanh@test.com')");
-
-        // NOTE: error if concurrently execute this with `createGradeService`
-        jdbc.execute("insert into math_grade(id, student_id, grade) values(2, 2, 60.00)");
-        jdbc.execute("insert into science_grade(id, student_id, grade) values(2, 2, 80.00)");
+        jdbc.execute(sqlInsertStudentData);
+        jdbc.execute(sqlInsertMathGradeData);
+        jdbc.execute(sqlInsertScienceGradeData);
     }
 
     // STUDENT
@@ -203,8 +220,8 @@ public class StudentGradeServiceTest {
 
     @AfterEach
     public void setupDBAfterTransactions()  throws Exception {
-        jdbc.execute("DELETE FROM student");
-        jdbc.execute("DELETE FROM math_grade");
-        jdbc.execute("DELETE FROM science_grade");
+        jdbc.execute(sqlDeleteStudentData);
+        jdbc.execute(sqlDeleteMathGradeData);
+        jdbc.execute(sqlDeleteScienceGradeData);
     }
 }
