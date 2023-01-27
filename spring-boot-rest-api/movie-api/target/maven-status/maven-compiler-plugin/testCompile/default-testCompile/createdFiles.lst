@@ -1,0 +1,8 @@
+com\ivanfranchin\movieapi\user\UserControllerTest.class
+com\ivanfranchin\movieapi\user\UserServiceTest.class
+com\ivanfranchin\movieapi\review\MovieReviewServiceTest.class
+com\ivanfranchin\movieapi\tag\TagServiceTest.class
+com\ivanfranchin\movieapi\review\MovieReviewControllerTest.class
+com\ivanfranchin\movieapi\movie\MovieControllerTest.class
+com\ivanfranchin\movieapi\movie\MovieServiceTest.class
+com\ivanfranchin\movieapi\user\UserEntityTest.class

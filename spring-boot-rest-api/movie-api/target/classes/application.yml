@@ -1,0 +1,38 @@
+spring:
+    application:
+        name: movie-api
+    jpa:
+        hibernate:
+            ddl-auto: create
+    jackson:
+        serialization:
+            WRITE_DATES_AS_TIMESTAMPS: false
+        time-zone: UTC
+
+    datasource:
+        url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/moviedb?characterEncoding=UTF-8&serverTimezone=UTC
+        username: root
+        password: kien12a99
+    security:
+        oauth2:
+            client:
+                registration:
+                    github:
+                        clientId: ${GITHUB_CLIENT_ID}
+                        clientSecret: ${GITHUB_CLIENT_SECRET}
+
+app:
+    jwt:
+        # Signing key for HS512 algorithm
+        # In http://www.allkeysgenerator.com/ you can generate all kinds of keys
+        secret: v9y$B&E)H@MbQeThWmZq4t7w!z%C*F-JaNdRfUjXn2r5u8x/A?D(G+KbPeShVkYp
+        expiration:
+            minutes: 2000
+    oauth2:
+        redirectUri: http://localhost:3000/oauth2/redirect
+    cors:
+        allowed-origins: http://localhost:3000
+
+logging:
+    level:
+        org.springframework.security: DEBUG
