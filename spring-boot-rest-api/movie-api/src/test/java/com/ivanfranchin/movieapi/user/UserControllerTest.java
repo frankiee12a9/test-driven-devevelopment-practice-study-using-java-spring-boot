@@ -13,7 +13,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -73,9 +72,6 @@ public class UserControllerTest {
 
     @Autowired
     private User user;
-
-    @MockBean
-    private JwtDecoder jwtDecoder;
 
     @Value("${sql.script.insert.user}")
     private String sqlInsertUser;
