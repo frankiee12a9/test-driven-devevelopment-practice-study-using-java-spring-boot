@@ -1,6 +1,5 @@
 package com.ivanfranchin.movieapi.config;
 
-import java.nio.file.attribute.UserPrincipal;
 import java.util.Optional;
 
 import org.springframework.context.annotation.Bean;
@@ -11,34 +10,26 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.ivanfranchin.movieapi.security.CustomUserDetails;
+
 @Configuration
 @EnableJpaAuditing
 public class AuditingConfig {
-
-    //! enable this case: java.lang.ClassCastException: class com.ivanfranchin.movieapi.security.CustomUserDetails cannot be cast to class java.nio.file.attribute.UserPrincipal
-    // @Bean
-	// public AuditorAware<Long> auditorProvider() {
-	// 	return new SpringSecurityAuditAwareImpl();
-	// }
-    // @Bean
-	// public AuditorAware<String> auditorProvider() {
-	// 	return new SpringSecurityAuditAwareImpl();
-	// }
+    @Bean
+	public AuditorAware<String> auditorProvider() {
+		return new SpringSecurityAuditAwareImpl();
+	}
 }
 
-// class SpringSecurityAuditAwareImpl implements AuditorAware<String> {
+class SpringSecurityAuditAwareImpl implements AuditorAware<String> {
 
-	// @Override
-	// public Optional<String> getCurrentAuditor() {
-	// 	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	@Override
+	public Optional<String> getCurrentAuditor() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) 
+			return Optional.empty();
 
-	// 	if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
-	// 		return Optional.empty();
-	// 	}
-
-	// 	UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-
-	// 	// return Optional.ofNullable(userPrincipal.getId());
-	// 	return Optional.ofNullable(userPrincipal.getName());
-	// }
-// }
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+		return Optional.ofNullable(userDetails.getName());
+	}
+}
