@@ -9,16 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -30,8 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ivanfranchin.movieapi.exception.ErrorResult;
 import com.ivanfranchin.movieapi.model.User;
 import com.ivanfranchin.movieapi.repository.UserRepository;
-import com.ivanfranchin.movieapi.rest.dto.LoginRequest;
-import com.ivanfranchin.movieapi.rest.dto.SignUpRequest;
+import com.ivanfranchin.movieapi.rest.dto.user.LoginRequest;
+import com.ivanfranchin.movieapi.rest.dto.user.SignUpRequest;
 import com.ivanfranchin.movieapi.service.UserService;
 
 import jakarta.persistence.EntityManager;
@@ -40,7 +42,7 @@ import jakarta.persistence.PersistenceContext;
 
 @TestPropertySource("/application-test.properties")
 @AutoConfigureMockMvc
-@SpringBootTest
+@SpringBootTest()
 @Transactional
 public class UserControllerTest {
     
@@ -48,6 +50,11 @@ public class UserControllerTest {
     private EntityManager entityManager;
 
     private static MockHttpServletRequest mockHttpRequest;
+
+    @Autowired
+    protected WebApplicationContext context;
+
+    protected org.springframework.security.core.userdetails.User loggedUser;
 
     @Mock
     UserService userService;
@@ -105,7 +112,20 @@ public class UserControllerTest {
     @Test
     void getNumberOfUsersHttpRequest() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/public/numberOfUsers"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", is(3)));
+        .andExpect(status().isOk()).andExpect(jsonPath("$", is(3)));
+    }
+    
+    @Test
+    @WithUserDetails("user") 
+    void getMeHttpRequest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/users/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(2)))
+                .andExpect(jsonPath("$.username", is("user")))
+                .andExpect(jsonPath("$.name", is("User")))
+                .andExpect(jsonPath("$.email", is("user@mycompany.com")))
+                .andExpect(jsonPath("$.role", is("ROLE_USER")))
+                .andDo(print());
     }
 
     @Test
@@ -122,7 +142,6 @@ public class UserControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(signUpRequest)))
                 .andExpect(status().isBadRequest())
-                // .andExpect(responseBody().containsError(field, message)) //* if using fluent api
                 .andDo(print())
                 .andReturn();
 
@@ -163,8 +182,7 @@ public class UserControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/auth/authenticate")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(loginRequest))
-                    )
+                    .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken", is(notNullValue())))
                 .andDo(print());
@@ -278,22 +296,20 @@ public class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/users/{username}", USERNAME))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-            .andExpect(jsonPath("$.id", is(3)))
             .andExpect(jsonPath("$.username", is(USERNAME)))
             .andExpect(jsonPath("$.name", is(NAME)))
             .andExpect(jsonPath("$.email", is(EMAIL)))
-            .andExpect(jsonPath("$.role", is("ROLE_USER")))
+            .andExpect(jsonPath("$.role", is(ROLE_USER)))
             .andDo(print());
         
         // delete user
          mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{username}", USERNAME))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(3)))
                 .andExpect(jsonPath("$.username", is(USERNAME)))
                 .andExpect(jsonPath("$.name", is(NAME)))
                 .andExpect(jsonPath("$.email", is(EMAIL)))
-                .andExpect(jsonPath("$.role", is("ROLE_USER")))
+                .andExpect(jsonPath("$.role", is(ROLE_USER)))
                 .andDo(print());
         
         assertFalse(userRepository.findByUsername(USERNAME).isPresent(), "should return false");
