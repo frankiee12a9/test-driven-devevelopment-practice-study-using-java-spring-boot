@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ivanfranchin.movieapi.model.MovieReview;
+import com.ivanfranchin.movieapi.model.User;
 import com.ivanfranchin.movieapi.model.payload.ApiResponse;
 import com.ivanfranchin.movieapi.rest.dto.moviereview.CreateMovieReviewRequest;
 import com.ivanfranchin.movieapi.rest.dto.moviereview.CreateMovieReviewResponse;
 import com.ivanfranchin.movieapi.security.CustomUserDetails;
 import com.ivanfranchin.movieapi.service.MovieReviewService;
+import com.ivanfranchin.movieapi.service.UserService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,12 +28,15 @@ import lombok.RequiredArgsConstructor;
 
 import static com.ivanfranchin.movieapi.config.SwaggerConfig.BEARER_KEY_SECURITY_SCHEME;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/movies/{movieId}/reviews")
 public class MovieReviewController {
     
     private final MovieReviewService reviewService;
+    private final UserService userService;
 
     @Operation(security = {@SecurityRequirement(name = BEARER_KEY_SECURITY_SCHEME)})
     @GetMapping
@@ -46,7 +51,8 @@ public class MovieReviewController {
     public ResponseEntity<CreateMovieReviewResponse> addReview(@Valid @RequestBody CreateMovieReviewRequest createMovieReviewRequest, 
         @PathVariable(name ="movieId") Long movieId, @AuthenticationPrincipal CustomUserDetails currentUser) {   
 
-        CreateMovieReviewResponse review = reviewService.addReview(createMovieReviewRequest, movieId, currentUser); 
+        Optional<User> user = userService.getUserByUsername(currentUser.getUsername());
+        CreateMovieReviewResponse review = reviewService.addReview(createMovieReviewRequest, movieId, user.get()); 
         return new ResponseEntity<> (review, HttpStatus.CREATED);
     }
 

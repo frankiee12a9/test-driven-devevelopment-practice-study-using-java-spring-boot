@@ -14,7 +14,6 @@ import com.ivanfranchin.movieapi.repository.MovieReviewRepository;
 import com.ivanfranchin.movieapi.repository.UserRepository;
 import com.ivanfranchin.movieapi.rest.dto.moviereview.CreateMovieReviewRequest;
 import com.ivanfranchin.movieapi.rest.dto.moviereview.CreateMovieReviewResponse;
-import com.ivanfranchin.movieapi.security.CustomUserDetails;
 
 @Service
 public class MovieReviewServiceImpl implements MovieReviewService {
@@ -29,7 +28,7 @@ public class MovieReviewServiceImpl implements MovieReviewService {
     private MovieReviewRepository movieReviewRepository;
 
     @Override
-    public CreateMovieReviewResponse addReview(CreateMovieReviewRequest reviewRequest, Long movieId, CustomUserDetails currentUser) {
+    public CreateMovieReviewResponse addReview(CreateMovieReviewRequest reviewRequest, Long movieId, User currentUser) {
         Movie movie = movieRepository.findById(movieId)
                                     .orElseThrow(() -> new ResourceNotFoundException("Movie", "id", movieId));
         User user = userRepository.findByUsername(currentUser.getUsername())
