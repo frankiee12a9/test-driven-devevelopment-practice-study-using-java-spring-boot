@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -23,14 +24,14 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.ivanfranchin.movieapi.model.audit.DateAudit;
+import com.ivanfranchin.movieapi.model.audit.UserDateAudit;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "movies", uniqueConstraints = { @UniqueConstraint(columnNames = { "imdb" }) })
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class Movie extends DateAudit {
+public class Movie extends UserDateAudit {
 
     private static final long serialVersionUID = 1L;
 
@@ -49,11 +50,15 @@ public class Movie extends DateAudit {
     @ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "movie_tag", joinColumns = @JoinColumn(name = "movie_id", referencedColumnName = "id"), 
         inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-	private List<Tag> tags;
+	private List<Tag> tags = new ArrayList<>();
 
     @JsonIgnore
 	@OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<MovieReview> reviews;
+	private List<MovieReview> reviews = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
+	private User user;
 
     public Movie() {}
 
@@ -68,14 +73,13 @@ public class Movie extends DateAudit {
 	}
 
 	public void setTags(List<Tag> tags) {
-		if (tags == null) 
-			this.tags = null;
-        else 
-			this.tags = Collections.unmodifiableList(tags);
+        if (tags != null) 
+            this.tags.clear();
+        this.tags.addAll(tags);
 	}
 
-    //* utility methods that enable bidirectional associations
-    //* ref: https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/
+    // utility methods that enable bidirectional associations
+    // reference: https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/
     public void addTag(Tag tag) {
         tags.add(tag);
         tag.getMovies().add(this);
@@ -95,5 +99,14 @@ public class Movie extends DateAudit {
             this.reviews = null;
         else 
 			this.reviews = Collections.unmodifiableList(reviews);
+	}
+
+    @JsonIgnore
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
 	}
 }
