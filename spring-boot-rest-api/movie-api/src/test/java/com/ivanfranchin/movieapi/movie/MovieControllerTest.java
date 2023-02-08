@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.CoreMatchers.*; // is()
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -33,7 +35,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ivanfranchin.movieapi.exception.ErrorResult;
 import com.ivanfranchin.movieapi.model.Movie;
 import com.ivanfranchin.movieapi.repository.MovieRepository;
+// import com.ivanfranchin.movieapi.rest.MovieController;
 import com.ivanfranchin.movieapi.rest.dto.movie.CreateMovieRequest;
+import com.ivanfranchin.movieapi.rest.dto.movie.CreateMovieResponse;
 import com.ivanfranchin.movieapi.service.MovieService;
 
 import jakarta.persistence.EntityManager;
@@ -73,6 +77,9 @@ public class MovieControllerTest {
 
     @Value("${sql.script.delete.movies}")
     private String sqlDeleteMovie;
+
+    @Value("${sql.script.delete.movie_tag}")
+    private String sqlDeleteMovieTag;
 
     @Value("${sql.script.insert.user}")
     private String sqlInsertUser;
@@ -184,7 +191,6 @@ public class MovieControllerTest {
     @WithMockUser(username = "admin", password = "admin", roles = "ADMIN")
     void deleteNonExistingMovieByImdbHttpRequest() throws Exception {
         String imdb = "nonPresentImdb";
-
         assertFalse(movieRepository.findByImdb(imdb).isPresent());
         
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/movies/{imdb}", imdb))
@@ -197,7 +203,6 @@ public class MovieControllerTest {
     @WithMockUser(username = "admin", password = "admin", roles = "ADMIN")
     void deleteMovieByImdbHttpRequest() throws Exception {
         String imdb = "tt01171998";
-
         assertTrue(movieRepository.findByImdb(imdb).isPresent(), "should return true");
         
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/movies/{imdb}", imdb))
@@ -213,8 +218,9 @@ public class MovieControllerTest {
     @Test
     @WithUserDetails("user")
     void editMovieHttpRequest() throws Exception {
+        // create 
         String newImdb = "tt0163111";
-        String newTitle = "today, now(edit)";
+        String newTitle = "today, nowww";
         String newPoster = "admin";
         var newAssociatedTags = Arrays.asList("test1", "test2", "test3");
 
@@ -222,24 +228,49 @@ public class MovieControllerTest {
         createMovieRequest.setTitle(newTitle);
         createMovieRequest.setPoster(newPoster);
         createMovieRequest.setTags(newAssociatedTags);
+        
+        Optional<Movie> movie = movieRepository.findByImdb(newImdb);
+        assertFalse(movie.isPresent(), "should return false");
 
-        Optional<Movie> movie = movieRepository.findById(6L);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/movies")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createMovieRequest))) 
+            .andExpect(status().isCreated())
+            .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+            .andExpect(jsonPath("$.imdb", is(createMovieRequest.getImdb())))
+            .andExpect(jsonPath("$.title", is(createMovieRequest.getTitle())))
+            .andExpect(jsonPath("$.poster", is(createMovieRequest.getPoster())))
+            .andExpect(jsonPath("$.tags", is(createMovieRequest.getTags())))
+            .andDo(print());
+
+        // verify created result
+        movie = movieRepository.findByImdb(newImdb);
         assertTrue(movie.isPresent(), "should return true");
+        
+        // perform editing
+        String editedTitle = "today, nowww (edit)";
+        createMovieRequest.setTitle(editedTitle);
+        assertEquals(editedTitle, createMovieRequest.getTitle(), "should be equals");
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/movies/{id}/edit", movie.get().getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createMovieRequest))) 
             .andExpect(status().isCreated())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-            .andExpect(jsonPath("$.imdb", is(newImdb)))
-            .andExpect(jsonPath("$.title", is(newTitle)))
-            .andExpect(jsonPath("$.poster", is(newPoster)))
-            .andExpect(jsonPath("$.tags", is(newAssociatedTags)))
+            .andExpect(jsonPath("$.imdb", is(createMovieRequest.getImdb())))
+            .andExpect(jsonPath("$.title", is(createMovieRequest.getTitle())))
+            .andExpect(jsonPath("$.poster", is(createMovieRequest.getPoster())))
+            .andExpect(jsonPath("$.tags", is(createMovieRequest.getTags())))
             .andDo(print());
+
+        // verify edited result
+        movie = movieRepository.findByImdb(newImdb);
+        assertEquals(editedTitle, movie.get().getTitle(), "should be equals");
     }
 
     @AfterEach
     void setupDbAfterTransactions() throws Exception {
+        jdbc.execute(sqlDeleteMovieTag);
         jdbc.execute(sqlDeleteMovie);
         jdbc.execute(sqlDeleteUser);
     }
