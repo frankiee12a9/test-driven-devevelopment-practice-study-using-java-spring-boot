@@ -2,7 +2,7 @@ package com.ivanfranchin.movieapi.rest;
 
 import com.ivanfranchin.movieapi.mapper.UserMapper;
 import com.ivanfranchin.movieapi.model.User;
-import com.ivanfranchin.movieapi.rest.dto.UserDto;
+import com.ivanfranchin.movieapi.rest.dto.user.UserDto;
 import com.ivanfranchin.movieapi.security.CustomUserDetails;
 import com.ivanfranchin.movieapi.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +46,6 @@ public class UserController {
     @Operation(security = {@SecurityRequirement(name = BEARER_KEY_SECURITY_SCHEME)})
     @GetMapping("/{username}")
     public User getUser(@PathVariable String username) {
-        // return userMapper.toUserDto(userService.validateAndGetUserByUsername(username));
         return userService.validateAndGetUserByUsername(username);
     }
 
