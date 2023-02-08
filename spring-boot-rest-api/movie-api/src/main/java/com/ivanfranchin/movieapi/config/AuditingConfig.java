@@ -30,6 +30,6 @@ class SpringSecurityAuditAwareImpl implements AuditorAware<String> {
 			return Optional.empty();
 
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-		return Optional.ofNullable(userDetails.getName());
+		return Optional.ofNullable(userDetails.getUsername());
 	}
 }
