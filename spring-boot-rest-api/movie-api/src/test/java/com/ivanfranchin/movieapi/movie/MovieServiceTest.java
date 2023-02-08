@@ -3,6 +3,8 @@ package com.ivanfranchin.movieapi.movie;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
+
 
 import java.util.Arrays;
 import java.util.List;
@@ -91,9 +93,11 @@ public class MovieServiceTest {
         CreateMovieRequest createMovieRequest = new CreateMovieRequest("tt01171999", "spring security", "blabalbal");
         var tags = Arrays.asList("test1", "test2");
         createMovieRequest.setTags(tags);
-
+        
         String username = "Kane";
         Optional<User> user = userRepository.findByUsername(username);
+
+        when(userRepository.findByUsername("nonExisted")).thenReturn(null);
 
         assertTrue(user.isPresent(), "should return true");
 
