@@ -11,11 +11,14 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.convert.Jsr310Converters;
 
 import com.ivanfranchin.movieapi.model.Movie;
+import com.ivanfranchin.movieapi.model.MovieReview;
 import com.ivanfranchin.movieapi.model.User;
-import com.ivanfranchin.movieapi.rest.dto.CreateMovieRequest;
-import com.ivanfranchin.movieapi.rest.dto.CreateMovieResponse;
-import com.ivanfranchin.movieapi.rest.dto.LoginRequest;
-import com.ivanfranchin.movieapi.rest.dto.SignUpRequest;
+import com.ivanfranchin.movieapi.rest.dto.movie.CreateMovieRequest;
+import com.ivanfranchin.movieapi.rest.dto.movie.CreateMovieResponse;
+import com.ivanfranchin.movieapi.rest.dto.moviereview.CreateMovieReviewRequest;
+import com.ivanfranchin.movieapi.rest.dto.moviereview.CreateMovieReviewResponse;
+import com.ivanfranchin.movieapi.rest.dto.user.LoginRequest;
+import com.ivanfranchin.movieapi.rest.dto.user.SignUpRequest;
 
 import jakarta.annotation.PostConstruct;
 
@@ -61,6 +64,24 @@ public class MovieApiApplication {
     @Scope(value = "prototype")
     CreateMovieResponse getCreateMovieResponse() {
         return new CreateMovieResponse();
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    CreateMovieReviewRequest getCreateMovieReviewRequest() {
+        return new CreateMovieReviewRequest();
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    CreateMovieReviewResponse getCreateMovieReviewResponse() {
+        return new CreateMovieReviewResponse();
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    MovieReview getMovieReview() {
+        return new MovieReview();
     }
 
     @Bean

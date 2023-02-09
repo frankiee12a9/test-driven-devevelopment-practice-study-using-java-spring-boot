@@ -16,8 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -26,8 +26,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "tags")
-// @Table(name = "tags", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }) })
+@Table(name = "tags", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }) })
 //@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Tag extends DateAudit  {
 

@@ -1,14 +1,17 @@
 package com.ivanfranchin.movieapi.security;
 
 import lombok.Data;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Map;
 
 @Data
+@Component
 public class CustomUserDetails implements OAuth2User, UserDetails {
     private static final long serialVersionUID = 1L;
 
