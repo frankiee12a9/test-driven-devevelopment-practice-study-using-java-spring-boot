@@ -3,6 +3,7 @@ package com.ivanfranchin.movieapi.movie;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.CoreMatchers.*; // is()
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,16 +36,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ivanfranchin.movieapi.exception.ErrorResult;
 import com.ivanfranchin.movieapi.model.Movie;
 import com.ivanfranchin.movieapi.repository.MovieRepository;
-// import com.ivanfranchin.movieapi.rest.MovieController;
 import com.ivanfranchin.movieapi.rest.dto.movie.CreateMovieRequest;
-import com.ivanfranchin.movieapi.rest.dto.movie.CreateMovieResponse;
 import com.ivanfranchin.movieapi.service.MovieService;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 @TestPropertySource("/application-test.properties")
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc()
+@DisplayName("Testing MovieController")
 @SpringBootTest
 @Transactional
 public class MovieControllerTest {
@@ -216,9 +216,9 @@ public class MovieControllerTest {
     }
 
     @Test
-    @WithUserDetails("user")
+    @WithUserDetails("admin")
     void editMovieHttpRequest() throws Exception {
-        // create 
+        // create movie
         String newImdb = "tt0163111";
         String newTitle = "today, nowww";
         String newPoster = "admin";
@@ -243,11 +243,11 @@ public class MovieControllerTest {
             .andExpect(jsonPath("$.tags", is(createMovieRequest.getTags())))
             .andDo(print());
 
-        // verify created result
+        // verify created movie result
         movie = movieRepository.findByImdb(newImdb);
         assertTrue(movie.isPresent(), "should return true");
         
-        // perform editing
+        // edit movie 
         String editedTitle = "today, nowww (edit)";
         createMovieRequest.setTitle(editedTitle);
         assertEquals(editedTitle, createMovieRequest.getTitle(), "should be equals");
@@ -263,7 +263,7 @@ public class MovieControllerTest {
             .andExpect(jsonPath("$.tags", is(createMovieRequest.getTags())))
             .andDo(print());
 
-        // verify edited result
+        // verify edited movie result
         movie = movieRepository.findByImdb(newImdb);
         assertEquals(editedTitle, movie.get().getTitle(), "should be equals");
     }
